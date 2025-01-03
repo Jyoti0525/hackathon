@@ -31,6 +31,7 @@ import Students from '../pages/university/Students';
 import BatchUpload from '../pages/university/BatchUpload';
 import UniversityAnalytics from '../pages/university/Analytics';
 import Placements from '../pages/university/Placements';
+import StudentDetails from '../pages/university/StudentDetails';
 
 // Shared Components
 import Settings from '../pages/shared/Settings';
@@ -121,6 +122,7 @@ const AppRoutes = () => {
         <Route index element={<UniversityDashboard />} />
         <Route path="profile" element={<UniversityProfile />} />
         <Route path="students" element={<Students />} />
+        <Route path="students/:studentId" element={<StudentDetails />} />
         <Route path="upload" element={<BatchUpload />} />
         <Route path="analytics" element={<UniversityAnalytics />} />
         <Route path="placements" element={<Placements />} />

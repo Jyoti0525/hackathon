@@ -2,67 +2,33 @@
 const mongoose = require('mongoose');
 
 const placementDriveSchema = new mongoose.Schema({
-  university: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'University',
-    required: true
-  },
-  company: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Company',
-    required: true
-  },
-  driveDate: {
-    type: Date,
-    required: true
-  },
-  registrationDeadline: Date,
-  status: {
-    type: String,
-    enum: ['Scheduled', 'In Progress', 'Completed', 'Cancelled'],
-    default: 'Scheduled'
-  },
+  university: { type: mongoose.Schema.Types.ObjectId, ref: 'University', required: true },
+  company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true },
+  driveDate: { type: Date, required: true },
+  positions: [{
+    role: String,
+    package: Number,
+    openings: Number,
+    description: String
+  }],
   eligibilityCriteria: {
     minimumCGPA: Number,
-    allowedBacklogs: Number,
-    eligibleBranches: [String],
-    eligibleBatches: [Number]
+    allowedDepartments: [String],
+    allowedBatches: [String],
+    additionalRequirements: String
   },
-  jobRoles: [{
-    title: String,
-    package: Number,
-    numberOfPositions: Number,
-    description: String,
-    requiredSkills: [String]
-  }],
-  registeredStudents: [{
-    student: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Student'
-    },
-    registrationDate: {
-      type: Date,
-      default: Date.now
-    },
-    status: {
-      type: String,
-      enum: ['Registered', 'Shortlisted', 'Interviewed', 'Selected', 'Rejected'],
-      default: 'Registered'
-    }
-  }],
+  registeredStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
+  status: {
+    type: String,
+    enum: ['Scheduled', 'Ongoing', 'Completed', 'Cancelled'],
+    default: 'Scheduled'
+  },
   rounds: [{
-    roundNumber: Number,
-    roundType: {
-      type: String,
-      enum: ['Aptitude', 'Technical', 'HR', 'Group Discussion', 'Other']
-    },
+    name: String,
     date: Date,
-    status: {
-      type: String,
-      enum: ['Pending', 'In Progress', 'Completed'],
-      default: 'Pending'
-    }
+    status: String,
+    selectedStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }]
   }]
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('PlacementDrive', placementDriveSchema);

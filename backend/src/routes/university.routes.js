@@ -20,6 +20,34 @@ const storage = multer.diskStorage({
     cb(null, `${Date.now()}-${file.originalname}`);
   }
 });
+const errorHandler = (error, res) => {
+  console.error('Operation error:', error);
+  const statusCode = error.statusCode || 500;
+  res.status(statusCode).json({
+    success: false,
+    message: error.message,
+    error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+  });
+};
+
+const validateUploadFile = (req, res, next) => {
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      message: 'No file provided'
+    });
+  }
+  const allowedTypes = ['csv', 'xlsx', 'xls'];
+  const fileType = req.file.originalname.split('.').pop().toLowerCase();
+  
+  if (!allowedTypes.includes(fileType)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid file type. Allowed types: CSV, XLSX, XLS'
+    });
+  }
+  next();
+};
 
 const upload = multer({ 
     storage: storage,
@@ -51,6 +79,65 @@ router.post('/upload/students', upload.single('file'), async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message
+    });
+  }
+});
+
+router.put('/update-student/:studentId', async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const updateData = req.body;
+
+    const updatedStudent = await Student.findByIdAndUpdate(
+      studentId,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedStudent) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: updatedStudent,
+      message: 'Student updated successfully'
+    });
+  } catch (error) {
+    console.error('Error updating student:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update student',
+      error: error.message
+    });
+  }
+});
+
+router.get('/student/:studentId', async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const student = await Student.findById(studentId);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: student
+    });
+  } catch (error) {
+    console.error('Error fetching student:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch student details',
+      error: error.message
     });
   }
 });
@@ -156,8 +243,6 @@ router.post('/upload/companies', upload.single('file'), async (req, res) => {
     }
   });
 
- // In your university.routes.js
-// In your university.routes.js
 router.get('/get-available-data', async (req, res) => {
     try {
       // Get students with full info
@@ -433,94 +518,237 @@ router.post('/add-test-data', async (req, res) => {
   }
 });
 // In your university.routes.js
+// backend/src/routes/university.routes.js
+// Add this route to your existing university routes
+
 router.get('/analytics', async (req, res) => {
   try {
-    // Get department-wise stats
+    // Get all necessary data
+    const placements = await Placement.find()
+      .populate('student', 'name department')
+      .populate('company', 'name');
+
+    const students = await Student.find();
+    const companies = await Company.find();
+
+    // Calculate overview statistics
+    const totalStudents = students.length;
+    const placedStudents = placements.length;
+    const packages = placements.map(p => p.package);
+    const averagePackage = packages.length > 0 
+      ? (packages.reduce((a, b) => a + b, 0) / packages.length).toFixed(2)
+      : 0;
+    const highestPackage = Math.max(...packages, 0);
+
+    // Department-wise analysis
     const departmentStats = await Placement.aggregate([
       {
         $group: {
-          _id: '$department',
+          _id: "$student.department",
           placedStudents: { $sum: 1 },
-          averagePackage: { $avg: '$package' }
+          averagePackage: { $avg: "$package" }
         }
       }
     ]);
 
-    // Get skills stats from placements
-    const skillsStats = await Placement.aggregate([
-      { $unwind: '$requiredSkills' },
+    // Skills analysis
+    const skillsData = placements.reduce((acc, placement) => {
+      if (placement.requiredSkills) {
+        placement.requiredSkills.forEach(skill => {
+          acc[skill] = (acc[skill] || 0) + 1;
+        });
+      }
+      return acc;
+    }, {});
+
+    // Recruitment timeline
+    const timeline = await Placement.aggregate([
       {
         $group: {
-          _id: '$requiredSkills',
-          count: { $sum: 1 }
+          _id: { 
+            year: { $year: "$date" },
+            month: { $month: "$date" }
+          },
+          placements: { $sum: 1 },
+          offers: { $sum: 1 }
         }
       }
+    ]);
+
+    // Year comparison
+    const currentYear = new Date().getFullYear();
+    const [currentYearStats, previousYearStats] = await Promise.all([
+      Placement.aggregate([
+        {
+          $match: {
+            date: {
+              $gte: new Date(`${currentYear}-01-01`),
+              $lte: new Date(`${currentYear}-12-31`)
+            }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalPlacements: { $sum: 1 },
+            averagePackage: { $avg: "$package" }
+          }
+        }
+      ]),
+      Placement.aggregate([
+        {
+          $match: {
+            date: {
+              $gte: new Date(`${currentYear-1}-01-01`),
+              $lte: new Date(`${currentYear-1}-12-31`)
+            }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalPlacements: { $sum: 1 },
+            averagePackage: { $avg: "$package" }
+          }
+        }
+      ])
     ]);
 
     res.json({
       success: true,
       data: {
+        placementStats: {
+          totalStudents,
+          placedStudents,
+          averagePackage,
+          highestPackage,
+          companiesVisited: companies.length
+        },
         departmentStats,
-        skillsStats
+        skillsStats: Object.entries(skillsData).map(([skill, count]) => ({
+          skill,
+          count
+        })),
+        recruitmentTimeline: timeline.sort((a, b) => 
+          a._id.year === b._id.year ? 
+            a._id.month - b._id.month : 
+            a._id.year - b._id.year
+        ),
+        yearComparison: {
+          currentYear: currentYearStats[0] || { totalPlacements: 0, averagePackage: 0 },
+          previousYear: previousYearStats[0] || { totalPlacements: 0, averagePackage: 0 }
+        }
       }
     });
   } catch (error) {
+    console.error('Analytics error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching analytics data'
     });
   }
 });
-// backend/src/routes/university.routes.js
 
-// GET profile route with detailed error logging
+// In your university.routes.js
 router.get('/profile', auth, async (req, res) => {
   try {
-    const profile = await UniversityProfile.findOne({ userId: req.user._id });
-    
-    if (!profile) {
-      // Create a default profile if none exists
-      const newProfile = new UniversityProfile({
-        userId: req.user._id,
-        name: req.user.name || '',
-        email: req.user.email || ''
-      });
-      await newProfile.save();
-      return res.json({ success: true, data: newProfile });
-    }
+      // First check if user exists and has proper permissions
+      if (!req.user) {
+          return res.status(401).json({
+              success: false,
+              message: 'Authentication required'
+          });
+      }
 
-    res.json({ success: true, data: profile });
+      // Find or create profile
+      let profile = await UniversityProfile.findOne({ userId: req.user._id });
+      
+      // If no profile exists, create one with default values
+      if (!profile) {
+          profile = new UniversityProfile({
+              userId: req.user._id,
+              universityName: req.user.universityName || '',
+              contactEmail: req.user.email,
+              contactPhone: '',
+              website: '',
+              location: ''
+          });
+          await profile.save();
+      }
+
+      return res.json({
+          success: true,
+          data: profile
+      });
+
   } catch (error) {
-    console.error('Profile fetch error:', error);
-    res.status(500).json({ success: false, message: error.message });
+      console.error('Profile fetch error:', error);
+      return res.status(500).json({
+          success: false,
+          message: 'Failed to fetch profile data',
+          error: error.message
+      });
   }
 });
+// In your backend university.routes.js
 
+// university.routes.js - Updated profile update route
 router.put('/profile', auth, async (req, res) => {
   try {
-    let profile = await UniversityProfile.findOne({ userId: req.user._id });
-    
-    if (!profile) {
-      profile = new UniversityProfile({
-        userId: req.user._id,
-        ...req.body
-      });
-    } else {
-      Object.assign(profile, req.body);
-    }
+      // Validate required fields
+      const requiredFields = ['universityName', 'location', 'website', 'contactEmail', 'contactPhone'];
+      const missingFields = requiredFields.filter(field => !req.body[field]);
+      
+      if (missingFields.length > 0) {
+          return res.status(400).json({
+              success: false,
+              message: 'Missing required fields',
+              error: `Missing: ${missingFields.join(', ')}`
+          });
+      }
 
-    await profile.save();
-    res.json({ success: true, data: profile });
+      // Find existing profile or create new one
+      let profile = await UniversityProfile.findOne({ userId: req.user._id });
+      
+      if (!profile) {
+          profile = new UniversityProfile({
+              userId: req.user._id,
+              ...req.body,
+              lastUpdated: new Date()
+          });
+      } else {
+          // Update existing profile
+          Object.assign(profile, {
+              ...req.body,
+              lastUpdated: new Date()
+          });
+      }
+
+      // Save the changes
+      await profile.save();
+
+      return res.json({
+          success: true,
+          data: profile
+      });
+
   } catch (error) {
-    console.error('Profile update error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error updating profile',
-      error: error.message
-    });
+      console.error('Profile update error:', error);
+      
+      if (error.name === 'ValidationError') {
+          return res.status(400).json({
+              success: false,
+              message: 'Validation failed',
+              error: Object.values(error.errors).map(err => err.message).join(', ')
+          });
+      }
+
+      return res.status(500).json({
+          success: false,
+          message: 'Failed to update profile',
+          error: error.message
+      });
   }
 });
-
-
 
 module.exports = router;

@@ -8,6 +8,11 @@ require('dotenv').config();
 const app = express();
 const server = require('http').createServer(app);
 
+
+const UniversityWebSocketServer = require('./websocket/universityWebSocket');
+const wsServer = new UniversityWebSocketServer(server);
+
+
 // Import services
 const notificationService = require('./services/notificationService');
 
@@ -22,6 +27,8 @@ const aiIntegrationRoutes = require('./routes/aiIntegration.routes');
 const interviewRoutes = require('./routes/interview.routes');
 const skillRoutes = require('./routes/skill.routes');
 const universityRoutes = require('./routes/university.routes');
+
+
 
 // Middleware
 app.use(cors({

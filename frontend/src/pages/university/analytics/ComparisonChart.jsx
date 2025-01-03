@@ -1,39 +1,33 @@
-// src/pages/university/analytics/ComparisonChart.jsx
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-const ComparisonChart = () => {
-  const data = [
+const ComparisonChart = ({ data }) => {
+  const formattedData = [
     {
-      category: 'Total Placements',
-      currentYear: 450,
-      previousYear: 380
+      metric: 'Total Placements',
+      current: data.currentYear.totalPlacements,
+      previous: data.previousYear.totalPlacements
     },
     {
-      category: 'Average Package',
-      currentYear: 8.5,
-      previousYear: 7.8
-    },
-    {
-      category: 'Companies',
-      currentYear: 45,
-      previousYear: 40
+      metric: 'Average Package',
+      current: parseFloat(data.currentYear.averagePackage),
+      previous: parseFloat(data.previousYear.averagePackage)
     }
   ];
 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
-      <h3 className="text-lg font-semibold mb-4">Year-over-Year Comparison</h3>
+      <h2 className="text-lg font-semibold mb-4">Year-over-Year Comparison</h2>
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data}>
+          <BarChart data={formattedData}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="category" />
+            <XAxis dataKey="metric" />
             <YAxis />
             <Tooltip />
             <Legend />
-            <Bar dataKey="currentYear" fill="#8884d8" name="Current Year" />
-            <Bar dataKey="previousYear" fill="#82ca9d" name="Previous Year" />
+            <Bar dataKey="current" name="Current Year" fill="#8884d8" />
+            <Bar dataKey="previous" name="Previous Year" fill="#82ca9d" />
           </BarChart>
         </ResponsiveContainer>
       </div>
