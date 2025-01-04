@@ -1,104 +1,32 @@
-// backend/src/models/Skill.js
 const mongoose = require('mongoose');
 
-const verificationSchema = new mongoose.Schema({
-    type: {
-        type: String,
-        enum: ['certificate', 'project', 'assessment', 'endorsement'],
-        required: true
-    },
-    source: String,
-    url: String,
-    date: Date,
-    score: Number,
-    verified: {
-        type: Boolean,
-        default: false
-    }
-});
-
-const progressSchema = new mongoose.Schema({
-    level: {
-        type: Number,
-        min: 0,
-        max: 100,
-        required: true
-    },
-    lastAssessed: Date,
-    history: [{
-        level: Number,
-        date: Date
-    }]
-});
 
 const skillSchema = new mongoose.Schema({
-    userId: {
+    studentId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Student',
         required: true
     },
     name: {
         type: String,
         required: true
     },
-    category: {
-        type: String,
-        required: true
-    },
     level: {
         type: String,
-        enum: ['beginner', 'intermediate', 'advanced', 'expert'],
-        default: 'beginner'
+        enum: ['Beginner', 'Intermediate', 'Advanced'],
+        default: 'Beginner'
     },
-    verifications: [verificationSchema],
-    progress: progressSchema,
-    endorsements: [{
-        userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
-        },
-        comment: String,
-        rating: Number,
-        date: {
-            type: Date,
-            default: Date.now
-        }
-    }],
-    projects: [{
-        name: String,
-        description: String,
-        url: String,
-        technologies: [String]
-    }],
-    learningResources: [{
-        type: {
-            type: String,
-            enum: ['course', 'book', 'tutorial', 'project'],
-            required: true
-        },
-        title: String,
-        provider: String,
-        url: String,
-        status: {
-            type: String,
-            enum: ['planned', 'in-progress', 'completed'],
-            default: 'planned'
-        },
-        completionDate: Date
-    }],
-    createdAt: {
-        type: Date,
-        default: Date.now
+    progress: {
+        type: Number,
+        min: 0,
+        max: 100,
+        default: 0
     },
-    updatedAt: {
-        type: Date,
-        default: Date.now
+    verificationStatus: {
+        type: String,
+        enum: ['pending', 'verified', 'rejected'],
+        default: 'pending'
     }
-});
-
-skillSchema.pre('save', function(next) {
-    this.updatedAt = Date.now();
-    next();
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Skill', skillSchema);

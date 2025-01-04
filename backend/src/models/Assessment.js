@@ -1,77 +1,61 @@
+// backend/src/models/Assessment.js
 const mongoose = require('mongoose');
-
-const questionSchema = new mongoose.Schema({
-    text: {
-        type: String,
-        required: true
-    },
-    type: {
-        type: String,
-        enum: ['multiple-choice', 'coding', 'short-answer'],
-        required: true
-    },
-    options: [{
-        text: String,
-        isCorrect: Boolean
-    }],
-    points: {
-        type: Number,
-        default: 1
-    },
-    difficulty: {
-        type: String,
-        enum: ['easy', 'medium', 'hard'],
-        required: true
-    }
-});
 
 const assessmentSchema = new mongoose.Schema({
     title: {
         type: String,
         required: true
     },
+    subject: {
+        type: String,
+        required: true
+    },
     description: String,
-    topic: {
-        type: String,
+    duration: {
+        type: Number,  // in minutes
         required: true
     },
-    skillCategory: {
-        type: String,
-        required: true
-    },
-    timeLimit: {
+    totalMarks: {
         type: Number,
         required: true
     },
-    difficulty: {
-        type: String,
-        enum: ['beginner', 'intermediate', 'advanced'],
-        required: true
-    },
-    questions: [questionSchema],
-    passingScore: {
+    passingMarks: {
         type: Number,
         required: true
     },
+    dueDate: {
+        type: Date,
+        required: true
+    },
+    questions: [{
+        questionText: String,
+        options: [String],
+        correctAnswer: String,
+        marks: Number
+    }],
     status: {
         type: String,
-        enum: ['draft', 'active', 'inactive'],
-        default: 'draft'
+        enum: ['pending', 'ongoing', 'completed', 'upcoming'],
+        default: 'pending'
+    },
+    assignedTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Student',
+        required: true
     },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
+    score: {
+        type: Number,
+        default: 0
     },
-    updatedAt: {
-        type: Date,
-        default: Date.now
-    }
+    submittedAt: Date,
+    startedAt: Date
+}, {
+    timestamps: true
 });
-const Assessment = mongoose.model('Assessment', assessmentSchema);
 
-module.export = Assessment;
+module.exports = mongoose.model('Assessment', assessmentSchema);

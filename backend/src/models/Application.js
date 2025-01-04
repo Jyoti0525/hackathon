@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 
-const interviewSchema = new mongoose.Schema({
+const applicationSchema = new mongoose.Schema({
     studentId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Student',
@@ -16,16 +16,15 @@ const interviewSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    date: {
-        type: Date,
-        required: true
-    },
     status: {
         type: String,
-        enum: ['scheduled', 'completed', 'cancelled'],
-        default: 'scheduled'
+        enum: ['applied', 'under_review', 'selected', 'rejected'],
+        default: 'applied'
     },
-    feedback: String
+    appliedDate: {
+        type: Date,
+        default: Date.now
+    }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Interview', interviewSchema);
+module.exports = mongoose.model('Application', applicationSchema);

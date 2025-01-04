@@ -73,7 +73,7 @@ const DashboardLayout = ({ role }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-[#E9F9E5] ">
       {/* Mobile Sidebar Toggle */}
       <button
         className="fixed top-4 left-4 z-50 md:hidden bg-white p-2 rounded-md shadow-lg"
@@ -86,17 +86,17 @@ const DashboardLayout = ({ role }) => {
       <aside className={`
         fixed top-0 left-0 z-40 h-screen w-64 
         transition-transform duration-300 ease-in-out
-        bg-white shadow-lg
+        bg-[#D3EDDB] shadow-lg
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         md:translate-x-0
       `}>
         {/* Logo */}
-        <div className="h-16 flex items-center justify-center border-b">
-          <h1 className="text-xl font-bold text-blue-600">Talent Bridge</h1>
+        <div className="h-16 flex items-center justify-center border-b bg-[#2C4C24]">
+          <h1 className="text-xl font-bold text-white">Talent Bridge</h1>
         </div>
 
         {/* Navigation */}
-        <nav className="p-4">
+        <nav className="p-4  ">
           <ul className="space-y-2">
             {navigationItems.map((item) => {
               const Icon = item.icon;

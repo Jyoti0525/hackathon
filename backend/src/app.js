@@ -27,7 +27,9 @@ const aiIntegrationRoutes = require('./routes/aiIntegration.routes');
 const interviewRoutes = require('./routes/interview.routes');
 const skillRoutes = require('./routes/skill.routes');
 const universityRoutes = require('./routes/university.routes');
-
+const settingsRoutes = require('./routes/settings.routes');
+const userRoutes = require('./routes/user.routes');
+const studentRoutes = require('./routes/student.routes');
 
 
 // Middleware
@@ -41,6 +43,12 @@ app.use(express.urlencoded({ extended: true }));
 // Initialize WebSocket for notifications
 notificationService.initialize(server);
 
+// backend/src/app.js or index.js
+if (!process.env.JWT_SECRET) {
+    console.error('JWT_SECRET is not defined in environment variables');
+    process.exit(1);
+}
+
 // Database connection
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
@@ -50,6 +58,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 .catch(err => console.error('MongoDB connection error:', err));
 
 // Routes
+app.use('/api', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/jobs', jobRoutes);
@@ -60,6 +69,10 @@ app.use('/api/ai', aiIntegrationRoutes);
 app.use('/api/interviews', interviewRoutes);
 app.use('/api/skills', skillRoutes);
 app.use('/api/university', universityRoutes);
+app.use('/api', settingsRoutes);
+app.use('/api/student', studentRoutes);
+app.use('/api/profile', profileRoutes);
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {

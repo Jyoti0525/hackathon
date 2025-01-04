@@ -9,6 +9,7 @@ import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
 
 // Student Pages
+import ProfileManager from '../pages/student/profileManager';
 import StudentDashboard from '../pages/student/Dashboard';
 import StudentAssessments from '../pages/student/Assessments';
 import StudentProfile from '../pages/student/Profile';
@@ -91,7 +92,8 @@ const AppRoutes = () => {
       }>
         <Route index element={<StudentDashboard />} />
         <Route path="assessments" element={<StudentAssessments />} />
-        <Route path="profile" element={<StudentProfile />} />
+        <Route path="profile" element={<ProfileManager />} />
+        {/* <Route path="profile" element={<StudentProfile />} /> */}
         <Route path="jobs" element={<JobSearch />} />
         <Route path="skills" element={<SkillDevelopment />} />
         <Route path="interview-prep" element={<InterviewPrep />} />

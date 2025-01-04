@@ -1,34 +1,48 @@
-// src/middlewares/auth.js
+// backend/src/middlewares/auth.js
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const auth = async (req, res, next) => {
     try {
-        // Get token from the Authorization header
-        const token = req.header('Authorization').replace('Bearer ', '');
+        const token = req.header('Authorization')?.replace('Bearer ', '');
         
-        // Verify the token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
-        // Find user with the decoded id
-        const user = await User.findOne({ 
-            _id: decoded._id,
-            'tokens.token': token 
-        });
-
-        if (!user) {
-            throw new Error('No user found with this token');
+        if (!token) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication token is required'
+            });
         }
 
-        // Add user and token to the request object
-        req.user = user;
-        req.token = token;
-        
-        next();
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            console.log('Decoded token payload:', decoded); // Debugging line
+
+            const user = await User.findById(decoded.userId);
+            console.log('Found user:', user ? 'Yes' : 'No'); // Debugging line
+
+            if (!user) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'User not found in the system'
+                });
+            }
+
+            req.user = user;
+            req.token = token;
+            next();
+        } catch (jwtError) {
+            console.error('JWT verification failed:', jwtError);
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid authentication token',
+                error: jwtError.message
+            });
+        }
     } catch (error) {
-        res.status(401).json({
+        console.error('Authentication middleware error:', error);
+        res.status(500).json({
             success: false,
-            message: 'Authentication required',
+            message: 'Server authentication error',
             error: error.message
         });
     }
