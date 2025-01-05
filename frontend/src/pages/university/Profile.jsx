@@ -53,7 +53,7 @@ const Profile = () => {
 const fetchProfileData = async () => {
   try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/university/profile', {
+      const response = await axios.get('http://localhost:8000/api/university/profile', {
           headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -135,7 +135,7 @@ const fetchProfileData = async () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/university/upload-logo',
+        'http://localhost:8000/api/university/upload-logo',
         formData,
         {
           headers: {
@@ -224,7 +224,7 @@ const handleSubmit = async (e) => {
       };
 
       const response = await axios.put(
-          'http://localhost:5000/api/university/profile',
+          'http://localhost:8000/api/university/profile',
           profileData,
           {
               headers: {

@@ -33,6 +33,7 @@ import BatchUpload from '../pages/university/BatchUpload';
 import UniversityAnalytics from '../pages/university/Analytics';
 import Placements from '../pages/university/Placements';
 import StudentDetails from '../pages/university/StudentDetails';
+import TakeAssessment from '../pages/student/TakeAssessment';
 
 // Shared Components
 import Settings from '../pages/shared/Settings';
@@ -98,6 +99,7 @@ const AppRoutes = () => {
         <Route path="skills" element={<SkillDevelopment />} />
         <Route path="interview-prep" element={<InterviewPrep />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="take-assessment" element={<TakeAssessment />} />
       </Route>
 
       {/* Company Routes */}

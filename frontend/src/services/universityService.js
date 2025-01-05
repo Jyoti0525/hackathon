@@ -1,11 +1,11 @@
 // frontend/src/services/universityService.js
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:5000/api/university';
+const BASE_URL = 'http://localhost:8000/api/university';
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
-  timeout: 5000,
+  timeout: 8000,
   headers: {
     'Content-Type': 'application/json'
   }

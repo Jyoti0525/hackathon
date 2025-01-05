@@ -41,7 +41,7 @@ const fetchSettings = async () => {
             return;
         }
 
-        const response = await axios.get('http://localhost:5000/api/user/settings', {
+        const response = await axios.get('http://localhost:8000/api/user/settings', {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -77,7 +77,7 @@ const fetchSettings = async () => {
             setLoading(true);
             const token = localStorage.getItem('token');
             const response = await axios.put(
-                'http://localhost:5000/api/settings/password',
+                'http://localhost:8000/api/settings/password',
                 {
                     currentPassword: accountSettings.currentPassword,
                     newPassword: accountSettings.newPassword
@@ -114,7 +114,7 @@ const fetchSettings = async () => {
 
             const token = localStorage.getItem('token');
             const response = await axios.put(
-                'http://localhost:5000/api/settings/notifications',
+                'http://localhost:8000/api/settings/notifications',
                 updatedSettings,
                 {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -145,7 +145,7 @@ const fetchSettings = async () => {
 
             const token = localStorage.getItem('token');
             const response = await axios.put(
-                'http://localhost:5000/api/settings/privacy',
+                'http://localhost:8000/api/settings/privacy',
                 updatedSettings,
                 {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -169,7 +169,7 @@ const fetchSettings = async () => {
                 setLoading(true);
                 const token = localStorage.getItem('token');
                 const response = await axios.delete(
-                    'http://localhost:5000/api/settings/account',
+                    'http://localhost:8000/api/settings/account',
                     {
                         headers: { 'Authorization': `Bearer ${token}` }
                     }

@@ -53,22 +53,63 @@ const Assessments = () => {
         setSkillLevels(updatedLevels);
     };
 
+    // const handleGenerateAssessment = async () => {
+    //     try {
+    //         const assessmentData = {
+    //             skills: selectedSkills,
+    //             levels: skillLevels
+    //         };
+
+    //         // Navigate to assessment page with selected skills and levels
+    //         navigate('/student/assessment/take', { 
+    //             state: { assessmentData }
+    //         });
+    //     } catch (error) {
+    //         setError('Failed to generate assessment. Please try again.');
+    //     }
+    // };
+    // In your Assessments.jsx
     const handleGenerateAssessment = async () => {
         try {
-            const assessmentData = {
-                skills: selectedSkills,
-                levels: skillLevels
-            };
-
-            // Navigate to assessment page with selected skills and levels
-            navigate('/student/assessment/take', { 
-                state: { assessmentData }
+            setLoading(true);
+            const response = await fetch('http://localhost:8500/generate-assessment', {
+                method: 'POST',
+                mode: 'cors', // Enable CORS
+                credentials: 'include', // Include credentials if needed
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': 'http://localhost:3000'
+                },
+                body: JSON.stringify({
+                    skills: selectedSkills,
+                    levels: skillLevels
+                })
             });
+    
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.detail || 'Failed to generate assessment');
+            }
+    
+            console.log("data", data);
+    
+            if (data.success) {
+                // Navigate to assessment page with questions
+                navigate('/dashboard/student/take-assessment', { 
+                    state: { questions: data.questions }
+                });
+            } else {
+                throw new Error('Failed to generate assessment');
+            }
         } catch (error) {
             setError('Failed to generate assessment. Please try again.');
+            console.error('Error:', error);
+        } finally {
+            setLoading(false);
         }
     };
-
     const fetchAssessments = async () => {
         try {
             setLoading(true);

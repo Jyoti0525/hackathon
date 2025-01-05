@@ -35,7 +35,7 @@ const TestUpload = () => {
     setMessage('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/upload/csv', formData, {
+      const response = await axios.post('http://localhost:8000/api/upload/csv', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

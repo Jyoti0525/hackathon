@@ -38,7 +38,7 @@ const UniversityProfileEdit = () => {
 
   const fetchProfile = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/profile');
+      const response = await axios.get('http://localhost:8000/api/profile');
       setProfile(response.data);
     } catch (err) {
       setError('Error fetching profile');
@@ -49,7 +49,7 @@ const UniversityProfileEdit = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.put('http://localhost:5000/api/profile', profile);
+      await axios.put('http://localhost:8000/api/profile', profile);
       setSuccess('Profile updated successfully');
     } catch (err) {
       setError('Error updating profile');
